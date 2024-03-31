@@ -379,7 +379,6 @@ class SdxlBot(discord.Client):
     @tasks.loop(seconds=1)
     async def auto_message_sender_loop(self, out_map=None):
         loop = asyncio.get_running_loop()  # Get the current running event loop
-
         if out_map is None:
             try:
                 out_map = self.response_queue.get_nowait()
@@ -389,8 +388,8 @@ class SdxlBot(discord.Client):
             logger.info('auto_message_sender_loop() called directly...?')
 
         logger.info('Auto-send received something:')
-        debug_map = {k: v for k, v in out_map.items() if k != 'message_obj'}
-        logger.info('\n' + json.dumps(debug_map, indent=2))
+        debug_map = {k:v for k,v in out_map.items() if k != 'message_obj'}
+        logger.info('\n'+json.dumps(debug_map, indent=2))
         message = out_map['message_obj']
         pos = out_map['positive_prompt']
         neg = out_map['negative_prompt']
@@ -402,11 +401,8 @@ class SdxlBot(discord.Client):
 
 
 
-
-
 if __name__ == '__main__':
 
-    
     instructions = """
     To use this script make sure to do the following:
     1. Put discord bot info in ~/.sdxlbot with the following yaml structure:
