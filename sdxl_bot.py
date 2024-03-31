@@ -23,7 +23,6 @@ import sys
 import logging
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
 os.makedirs('./logs', exist_ok=True)
 fileHandler = logging.FileHandler(os.path.join('logs', f'sdxl_bot.log'))
 fileHandler.setFormatter(logFormatter)
@@ -295,9 +294,6 @@ class SdxlBot(discord.Client):
 
                   include_base_output=False,
         ):
-
-        logger.info('SDXL Thread Started')
-        logger.debug(f'Request map: {req_map}')
 
         img_output_dir = 'ComfyUI/output'  # ComfyUI doesn't want to let me change this...
         os.makedirs(img_output_dir, exist_ok=True)
