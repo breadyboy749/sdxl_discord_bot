@@ -23,7 +23,7 @@ import sys
 import logging
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
 logger = logging.getLogger()
-
+logger.setLevel(logging.DEBUG)
 os.makedirs('./logs', exist_ok=True)
 fileHandler = logging.FileHandler(os.path.join('logs', f'sdxl_bot.log'))
 fileHandler.setFormatter(logFormatter)
@@ -45,7 +45,7 @@ global response_queue
 response_queue = queue.Queue(maxsize=1)
 
                 
-class SdxlBot(discord.Bot):
+class SdxlBot(discord.Client):
     def __init__(self, args):
         
         # Hardcoding intents for this specific bot
@@ -296,6 +296,9 @@ class SdxlBot(discord.Bot):
                   include_base_output=False,
         ):
 
+        logger.info('SDXL Thread Started')
+        logger.debug(f'Request map: {req_map}')
+
         img_output_dir = 'ComfyUI/output'  # ComfyUI doesn't want to let me change this...
         os.makedirs(img_output_dir, exist_ok=True)
 
@@ -379,6 +382,8 @@ class SdxlBot(discord.Bot):
                     
     @tasks.loop(seconds=1)
     async def auto_message_sender_loop(self, out_map=None):
+        loop = asyncio.get_running_loop()  # Get the current running event loop
+
         if out_map is None:
             try:
                 out_map = self.response_queue.get_nowait()
@@ -388,8 +393,8 @@ class SdxlBot(discord.Bot):
             logger.info('auto_message_sender_loop() called directly...?')
 
         logger.info('Auto-send received something:')
-        debug_map = {k:v for k,v in out_map.items() if k != 'message_obj'}
-        logger.info('\n'+json.dumps(debug_map, indent=2))
+        debug_map = {k: v for k, v in out_map.items() if k != 'message_obj'}
+        logger.info('\n' + json.dumps(debug_map, indent=2))
         message = out_map['message_obj']
         pos = out_map['positive_prompt']
         neg = out_map['negative_prompt']
@@ -398,11 +403,13 @@ class SdxlBot(discord.Bot):
         fn_list = out_map['fn_list_base'] + out_map['fn_list_refined']
         await self.change_presence(status=discord.Status.online)
         await message.channel.send(response_text, files=[discord.File(f) for f in fn_list])
-        #await self.process_commands(message)
+
+
 
 
 
 if __name__ == '__main__':
+
     
     instructions = """
     To use this script make sure to do the following:
@@ -451,13 +458,15 @@ if __name__ == '__main__':
         SaveImage,
     )
 
-    
-    sdxl_bot = SdxlBot(args)                     
-    sdxl_bot.run()
-    
-                        
-                        
+# Start the task within the event loop
+async def start_bot():
+    sdxl_bot = SdxlBot(args)
+    await sdxl_bot.start(sdxl_bot.discord_token)
 
+# Run the bot using asyncio.run()
+asyncio.run(start_bot())
+                        
+                        
 
 
 
