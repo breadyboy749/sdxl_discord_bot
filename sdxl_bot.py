@@ -60,8 +60,7 @@ class SdxlBot(discord.Client):
         # Normal initialization for discord.Bot
         super().__init__(command_prefix='!', intents=intents)
         
-        discord_key_file = yaml.safe_load(open(os.path.expanduser(args.discord_key_file), 'r'))
-        self.discord_token = discord_key_file['token']
+        self.discord_token = os.getenv('DISCORD_BOT_TOKEN')
         self.styles_list = json.load(open('StyleSelectorXL/sdxl_styles.json', 'r'))
         self.styles_by_name_lower = {s['name'].lower():s for s in self.styles_list}
         self.sdxl_lock = threading.Lock()
